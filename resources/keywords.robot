@@ -15,11 +15,8 @@ API Should Be Healthy
 
 Create Ticket
     [Documentation]    Create a new ticket via API
-    [Arguments]    ${ticket_type}=single    ${zone}=AB    ${passenger_type}=adult
-    ${payload}=    Create Dictionary
-    ...    ticket_type=${ticket_type}
-    ...    zone=${zone}
-    ...    passenger_type=${passenger_type}
+    [Arguments]    ${zone}=AB
+    ${payload}=    Create Dictionary    zone=${zone}
     ${response}=    POST    ${API_BASE_URL}/tickets    json=${payload}
     [Return]    ${response}
 

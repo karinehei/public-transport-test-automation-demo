@@ -16,7 +16,7 @@ Complete Ticket Purchase And Validation Flow
     Should Be Equal As Strings    ${zones_response.status_code}    200
 
     # Step 3: Purchase ticket (user completes payment)
-    ${purchase_response}=    Create Ticket    ticket_type=single    zone=AB
+    ${purchase_response}=    Create Ticket    zone=AB
     Should Be Equal As Strings    ${purchase_response.status_code}    201
     ${ticket_id}=    Set Variable    ${purchase_response.json()}[id]
     Log    Purchased ticket: ${ticket_id}
@@ -30,19 +30,18 @@ Complete Ticket Purchase And Validation Flow
     ${validate_response}=    Validate Ticket    ${ticket_id}
     Should Be Equal As Strings    ${validate_response.status_code}    200
     Should Be Equal As Strings    ${validate_response.json()}[valid]    True
-    Should Be Equal As Strings    ${validate_response.json()}[message]    Ticket validated successfully
+    Should Be Equal As Strings    ${validate_response.json()}[status]    validated
 
     # Step 6: Verify ticket is now invalid (cannot be reused)
     ${after_validate}=    Get Ticket    ${ticket_id}
     Ticket Should Be Invalid    ${after_validate}
 
-Month Ticket Flow
-    [Documentation]    E2E: Purchase month ticket for zone ABCD
+Zone ABCD Ticket Flow
+    [Documentation]    E2E: Purchase ticket for zone ABCD
     [Tags]    e2e
 
-    ${response}=    Create Ticket    ticket_type=month    zone=ABCD
+    ${response}=    Create Ticket    zone=ABCD
     Should Be Equal As Strings    ${response.status_code}    201
-    Should Be Equal As Strings    ${response.json()}[ticket_type]    month
     Should Be Equal As Strings    ${response.json()}[zone]    ABCD
     ${ticket_id}=    Set Variable    ${response.json()}[id]
     ${get_response}=    Get Ticket    ${ticket_id}
