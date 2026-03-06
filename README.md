@@ -6,14 +6,13 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 
 - **Python 3.12**
 - **FastAPI** – ticketing API backend
-- **Robot Framework** – test automation
+- **Robot Framework** – test automation (RequestsLibrary)
 - **Docker & Docker Compose** – containerized execution
 - **GitHub Actions** – CI pipeline
 
 ## Project Structure
 
 ```
-ticketing-test-automation-demo/
 ├── api/
 │   ├── app.py           # FastAPI application
 │   ├── models.py        # Pydantic models
@@ -26,7 +25,10 @@ ticketing-test-automation-demo/
 │   └── e2e/             # End-to-end tests
 │       └── ticket_flow.robot
 ├── resources/
-│   └── keywords.robot   # Reusable keywords
+│   └── keywords.robot  # Reusable keywords
+├── .github/
+│   └── workflows/
+│       └── tests.yml   # GitHub Actions workflow
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
@@ -43,13 +45,6 @@ ticketing-test-automation-demo/
 | POST | `/validate` | Validate ticket |
 | GET | `/zones` | List transport zones |
 
-### Ticket Types
-
-- `single` – Single journey
-- `day` – Day ticket
-- `week` – Weekly ticket
-- `month` – Monthly ticket
-
 ### Zones (HSL-style)
 
 - AB, ABC, ABCD, BC, CD
@@ -58,15 +53,23 @@ ticketing-test-automation-demo/
 
 ### Local (without Docker)
 
-1. **Start the API:**
+1. **Create a virtual environment and install dependencies:**
    ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate   # Linux/macOS
+   # or:  .venv\Scripts\activate   # Windows
+
    pip install -r api/requirements.txt
-   uvicorn api.app:app --reload
+   pip install -r requirements.txt
    ```
 
-2. **Run tests:**
+2. **Start the API:**
    ```bash
-   pip install -r requirements.txt
+   cd api && uvicorn app:app --host 0.0.0.0 --port 8000
+   ```
+
+3. **Run tests** (in another terminal, with venv activated):
+   ```bash
    robot tests/
    ```
 
@@ -77,24 +80,31 @@ ticketing-test-automation-demo/
    docker compose up -d api
    ```
 
-2. **Run tests in containers:**
+2. **Run API + tests** (tests wait for API health, then run automatically):
    ```bash
-   docker compose --profile test run --rm tests
+   docker compose up
    ```
 
-3. **Full run (API + tests):**
+3. **Run tests only** (API must be running):
    ```bash
-   docker compose up api && docker compose --profile test run --rm tests
+   docker compose run --rm tests
    ```
+
+Test results are written to `results/` (report.html, log.html).
 
 ## CI (GitHub Actions)
 
-On push/PR to `main` or `master`:
+The `tests.yml` workflow runs on every push to `main` or `master`:
 
-1. Start API with Docker Compose
-2. Wait for health check
-3. Run Robot Framework tests
-4. Upload test results as artifacts
+1. Checkout repository
+2. Set up Python 3.12
+3. Install dependencies
+4. Start API with Docker Compose
+5. Wait for API health check
+6. Run Robot Framework tests
+7. Upload `report.html` and `log.html` as artifacts
+
+Download artifacts from the Actions run page to view test reports.
 
 ## Example: Create and Validate Ticket
 
@@ -102,7 +112,7 @@ On push/PR to `main` or `master`:
 # Create ticket
 curl -X POST http://localhost:8000/tickets \
   -H "Content-Type: application/json" \
-  -d '{"ticket_type": "single", "zone": "AB"}'
+  -d '{"zone": "AB"}'
 
 # Validate (use ticket_id from response)
 curl -X POST http://localhost:8000/validate \
