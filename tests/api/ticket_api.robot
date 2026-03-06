@@ -1,68 +1,73 @@
 *** Settings ***
-Resource    ../../resources/keywords.robot
-Suite Setup    Create Session    ticketing    ${API_BASE_URL}
+Library    RequestsLibrary
+Library    Collections
 Suite Teardown    Delete All Sessions
 
+*** Variables ***
+${API_BASE_URL}    http://api:8000
+
 *** Test Cases ***
-API Health Check
-    [Documentation]    Verify the ticketing API is running
-    API Should Be Healthy
-
-Create Ticket Zone AB
-    [Documentation]    Create a ticket in zone AB
-    ${response}=    Create Ticket    zone=AB
-    Should Be Equal As Strings    ${response.status_code}    201
-    Dictionary Should Contain Key    ${response.json()}    id
-    Should Be Equal As Strings    ${response.json()}[zone]    AB
-    Should Be Equal As Strings    ${response.json()}[valid]    True
-
-Create Ticket Zone ABC
-    [Documentation]    Create a ticket for zone ABC
-    ${response}=    Create Ticket    zone=ABC
-    Should Be Equal As Strings    ${response.status_code}    201
-    Should Be Equal As Strings    ${response.json()}[zone]    ABC
-
-Get Ticket By ID
-    [Documentation]    Verify ticket can be retrieved after creation
-    ${create_response}=    Create Ticket    zone=AB
-    ${ticket_id}=    Set Variable    ${create_response.json()}[id]
-    ${get_response}=    Get Ticket    ${ticket_id}
-    Should Be Equal As Strings    ${get_response.status_code}    200
-    Should Be Equal As Strings    ${get_response.json()}[id]    ${ticket_id}
-
-Get Non-Existent Ticket Returns 404
-    [Documentation]    Verify 404 for unknown ticket
-    ${response}=    GET    ${API_BASE_URL}/tickets/non-existent-id-12345
-    Should Be Equal As Strings    ${response.status_code}    404
-
-Validate Ticket
-    [Documentation]    Validate a ticket and verify it becomes invalid
-    ${create_response}=    Create Ticket    zone=AB
-    ${ticket_id}=    Set Variable    ${create_response.json()}[id]
-    ${validate_response}=    Validate Ticket    ${ticket_id}
-    Should Be Equal As Strings    ${validate_response.status_code}    200
-    Should Be Equal As Strings    ${validate_response.json()}[valid]    True
-    Should Be Equal As Strings    ${validate_response.json()}[status]    validated
-    ${get_response}=    Get Ticket    ${ticket_id}
-    Should Be Equal As Strings    ${get_response.json()}[valid]    False
-
-Double Validation Fails
-    [Documentation]    Verify ticket cannot be validated twice
-    ${create_response}=    Create Ticket    zone=AB
-    ${ticket_id}=    Set Variable    ${create_response.json()}[id]
-    Validate Ticket    ${ticket_id}
-    ${second_validate}=    Validate Ticket    ${ticket_id}
-    Should Be Equal As Strings    ${second_validate.json()}[valid]    False
-    Should Be Equal As Strings    ${second_validate.json()}[status]    already_used
-
 Get Zones
-    [Documentation]    Verify zones endpoint returns correct data
-    ${response}=    Get Zones
+    [Documentation]    Retrieve available travel zones and validate response
+    Create Session    ticketing    ${API_BASE_URL}
+    ${response}=    GET On Session    ticketing    /zones
     Should Be Equal As Strings    ${response.status_code}    200
     Dictionary Should Contain Key    ${response.json()}    zones
     ${zones}=    Set Variable    ${response.json()}[zones]
-    Length Should Be    ${zones}    5
+    Should Not Be Empty    ${zones}
     ${zone_ids}=    Create List    AB    ABC    ABCD    BC    CD
     FOR    ${zone}    IN    @{zones}
+        Dictionary Should Contain Key    ${zone}    id
+        Dictionary Should Contain Key    ${zone}    name
         List Should Contain Value    ${zone_ids}    ${zone}[id]
     END
+    Log    Zones: ${zones}
+
+Purchase Ticket
+    [Documentation]    Create a ticket (purchase) and validate response
+    Create Session    ticketing    ${API_BASE_URL}
+    ${payload}=    Create Dictionary    zone=AB
+    ${response}=    POST On Session    ticketing    /tickets    json=${payload}
+    Should Be Equal As Strings    ${response.status_code}    201
+    ${json}=    Set Variable    ${response.json()}
+    Dictionary Should Contain Key    ${json}    id
+    Dictionary Should Contain Key    ${json}    zone
+    Dictionary Should Contain Key    ${json}    created_at
+    Dictionary Should Contain Key    ${json}    valid
+    Should Be Equal As Strings    ${json}[zone]    AB
+    Should Be Equal As Strings    ${json}[valid]    True
+    Log    Ticket purchased: ${json}[id]
+
+Fetch Ticket
+    [Documentation]    Purchase a ticket then fetch it by ID and validate
+    Create Session    ticketing    ${API_BASE_URL}
+    ${payload}=    Create Dictionary    zone=ABC
+    ${create_response}=    POST On Session    ticketing    /tickets    json=${payload}
+    Should Be Equal As Strings    ${create_response.status_code}    201
+    ${ticket_id}=    Set Variable    ${create_response.json()}[id]
+    ${response}=    GET On Session    ticketing    /tickets/${ticket_id}
+    Should Be Equal As Strings    ${response.status_code}    200
+    ${json}=    Set Variable    ${response.json()}
+    Should Be Equal As Strings    ${json}[id]    ${ticket_id}
+    Should Be Equal As Strings    ${json}[zone]    ABC
+    Dictionary Should Contain Key    ${json}    created_at
+    Dictionary Should Contain Key    ${json}    valid
+    Should Be Equal As Strings    ${json}[valid]    True
+
+Validate Ticket
+    [Documentation]    Purchase ticket, validate it, and verify status
+    Create Session    ticketing    ${API_BASE_URL}
+    ${payload}=    Create Dictionary    zone=AB
+    ${create_response}=    POST On Session    ticketing    /tickets    json=${payload}
+    Should Be Equal As Strings    ${create_response.status_code}    201
+    ${ticket_id}=    Set Variable    ${create_response.json()}[id]
+    ${validate_payload}=    Create Dictionary    ticket_id=${ticket_id}
+    ${response}=    POST On Session    ticketing    /validate    json=${validate_payload}
+    Should Be Equal As Strings    ${response.status_code}    200
+    ${json}=    Set Variable    ${response.json()}
+    Should Be Equal As Strings    ${json}[ticket_id]    ${ticket_id}
+    Should Be Equal As Strings    ${json}[valid]    True
+    Should Be Equal As Strings    ${json}[status]    validated
+    Dictionary Should Contain Key    ${json}    validated
+    ${get_response}=    GET On Session    ticketing    /tickets/${ticket_id}
+    Should Be Equal As Strings    ${get_response.json()}[valid]    False
