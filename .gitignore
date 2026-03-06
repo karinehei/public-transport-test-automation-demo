@@ -32,6 +32,12 @@ report.html
 .DS_Store
 Thumbs.db
 
+# Binary files
+*.bin
+
+# Node
+node_modules/
+
 # Environment
 .env
 .env.local

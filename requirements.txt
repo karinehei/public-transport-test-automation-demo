@@ -2,3 +2,5 @@
 robotframework>=7.0,<8
 requests>=2.32
 robotframework-requests>=0.9.5
+robotframework-seleniumlibrary>=6.0
+webdriver-manager>=4.0

@@ -13,6 +13,17 @@ services:
       retries: 5
       start_period: 10s
 
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-serve
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
   tests:
     build:
       context: .
@@ -25,4 +36,22 @@ services:
         condition: service_healthy
     environment:
       - API_BASE_URL=http://api:8000
-    command: robot --variable API_BASE_URL:http://api:8000 --outputdir results tests/
+    command: robot --exclude ui --variable API_BASE_URL:http://api:8000 --outputdir results tests/
+
+  tests-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/workspace
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    environment:
+      - API_BASE_URL=http://api:8000
+    command: robot --include ui --variable APP_URL:http://frontend --variable API_BASE_URL:http://api:8000 --outputdir results tests/
+    profiles:
+      - ui-tests
