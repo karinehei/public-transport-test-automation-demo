@@ -1,16 +1,14 @@
-name: CI - Ticketing Test Automation
+name: Tests
 
 on:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,7 +16,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Start API with Docker Compose
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start API
         run: docker compose up -d api
 
       - name: Wait for API
@@ -33,18 +34,14 @@ jobs:
           done
           curl -sf http://localhost:8000/health || exit 1
 
-      - name: Install test dependencies
-        run: |
-          pip install robotframework requests robotframework-requests
-          pip install -r requirements.txt
-
       - name: Run Robot Framework tests
-        run: |
-          robot --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
+        run: robot --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
 
-      - name: Upload test results
+      - name: Upload Robot Framework report and log
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: robot-results
-          path: results/
+          path: |
+            results/report.html
+            results/log.html
