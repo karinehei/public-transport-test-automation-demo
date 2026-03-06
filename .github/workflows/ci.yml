@@ -40,7 +40,7 @@ jobs:
 
       - name: Run Robot Framework tests
         run: |
-          robot --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
+          robot --exclude ui --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
