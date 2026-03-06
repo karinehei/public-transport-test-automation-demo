@@ -33,9 +33,11 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 │   └── ui_keywords.robot
 ├── .github/
 │   └── workflows/
-│       └── tests.yml   # GitHub Actions workflow
+│       ├── ci.yml      # CI workflow (push + PR)
+│       └── tests.yml   # Tests workflow (push)
 ├── docker-compose.yml
 ├── Dockerfile
+├── LICENSE
 ├── requirements.txt
 └── README.md
 ```
@@ -45,6 +47,7 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Health check |
+| GET | `/tickets` | List all tickets |
 | POST | `/tickets` | Create ticket |
 | GET | `/tickets/{ticket_id}` | Get ticket by ID |
 | POST | `/validate` | Validate ticket |
@@ -115,17 +118,14 @@ Test results are written to `results/` (report.html, log.html).
 
 ## CI (GitHub Actions)
 
-The `tests.yml` workflow runs on every push to `main` or `master`:
+Workflows run on push and pull requests to `main`:
 
-1. Checkout repository
-2. Set up Python 3.12
-3. Install dependencies
-4. Start API with Docker Compose
-5. Wait for API health check
-6. Run Robot Framework tests
-7. Upload `report.html` and `log.html` as artifacts
+- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded)
+- **tests.yml** – Push only; runs API + E2E tests
 
-Download artifacts from the Actions run page to view test reports.
+Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
+
+Download `report.html` and `log.html` from the Actions run page.
 
 ## Example: Create and Validate Ticket
 
@@ -143,4 +143,4 @@ curl -X POST http://localhost:8000/validate \
 
 ## License
 
-MIT
+MIT License – see [LICENSE](LICENSE) for details. Copyright (c) 2025 Karine Heinonen.
