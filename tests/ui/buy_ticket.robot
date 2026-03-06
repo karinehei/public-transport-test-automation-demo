@@ -1,35 +1,29 @@
 *** Settings ***
-Resource    ../../resources/keywords.robot
-Suite Setup    Run Keywords    Create API Session    AND    API Should Be Healthy
-Suite Teardown    Delete All Sessions
+Resource    ../../resources/ui_keywords.robot
+Suite Teardown    Close Browser
+
+*** Variables ***
+${APP_URL}    http://localhost:3000
 
 *** Test Cases ***
-Buy Ticket UI Flow - Zone AB
-    [Documentation]    Simulates UI flow: user selects zone AB, pays
-    ${response}=    Create Ticket    zone=AB
-    Should Be Equal As Strings    ${response.status_code}    201
-    ${ticket_id}=    Set Variable    ${response.json()}[id]
-    Log    Ticket purchased: ${ticket_id}
-    ${get_response}=    Get Ticket    ${ticket_id}
-    Ticket Should Be Valid    ${get_response}
+Complete Ticket Purchase And Validation UI Flow
+    [Documentation]    E2E UI: Open app, select zone, buy ticket, confirm, validate, confirm result
+    [Tags]    ui    e2e    smoke
 
-Buy Ticket UI Flow - Zone ABC
-    [Documentation]    Simulates UI flow: user selects zone ABC
-    ${response}=    Create Ticket    zone=ABC
-    Should Be Equal As Strings    ${response.status_code}    201
-    ${ticket_id}=    Set Variable    ${response.json()}[id]
-    Log    Ticket purchased: ${ticket_id}
-    Should Be Equal As Strings    ${response.json()}[zone]    ABC
+    # Step 1: Open the application
+    Open Ticketing Application    url=${APP_URL}
 
-Buy Ticket UI Flow - Zone ABCD
-    [Documentation]    Simulates UI flow: user selects zone ABCD
-    ${response}=    Create Ticket    zone=ABCD
-    Should Be Equal As Strings    ${response.status_code}    201
-    Should Be Equal As Strings    ${response.json()}[zone]    ABCD
+    # Step 2: Select a travel zone
+    Select Travel Zone    zone=AB
 
-Verify Zones Available Before Purchase
-    [Documentation]    Verify zones are loaded before ticket purchase (UI prerequisite)
-    ${response}=    Get Zones
-    Should Be Equal As Strings    ${response.status_code}    200
-    ${zones}=    Set Variable    ${response.json()}[zones]
-    Should Not Be Empty    ${zones}    Zones must be available for purchase
+    # Step 3: Buy a ticket
+    Click Buy Ticket
+
+    # Step 4: Confirm ticket was created
+    Confirm Ticket Created
+
+    # Step 5: Validate the ticket
+    Click Validate Ticket
+
+    # Step 6: Confirm ticket validation result
+    Confirm Validation Success
