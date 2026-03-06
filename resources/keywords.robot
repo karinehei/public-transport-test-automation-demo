@@ -12,32 +12,37 @@ Create API Session
     [Arguments]    ${base_url}=${API_BASE_URL}    ${alias}=ticketing
     Create Session    ${alias}    ${base_url}
     Set Suite Variable    ${API_SESSION}    ${alias}
-    [Return]    ${alias}
+    RETURN    ${alias}
 
 Get Zones
     [Documentation]    Get available transport zones
     ${response}=    GET On Session    ${API_SESSION}    /zones
-    [Return]    ${response}
+    RETURN    ${response}
 
 Buy Ticket
     [Documentation]    Purchase a ticket for the given zone
     [Arguments]    ${zone}=AB
     ${payload}=    Create Dictionary    zone=${zone}
     ${response}=    POST On Session    ${API_SESSION}    /tickets    json=${payload}
-    [Return]    ${response}
+    RETURN    ${response}
+
+Create Ticket
+    [Documentation]    Alias for Buy Ticket (backward compatibility)
+    [Arguments]    ${zone}=AB
+    RETURN    Buy Ticket    zone=${zone}
 
 Get Ticket
     [Documentation]    Retrieve a ticket by ID
     [Arguments]    ${ticket_id}
     ${response}=    GET On Session    ${API_SESSION}    /tickets/${ticket_id}
-    [Return]    ${response}
+    RETURN    ${response}
 
 Validate Ticket
     [Documentation]    Validate a ticket
     [Arguments]    ${ticket_id}
     ${payload}=    Create Dictionary    ticket_id=${ticket_id}
     ${response}=    POST On Session    ${API_SESSION}    /validate    json=${payload}
-    [Return]    ${response}
+    RETURN    ${response}
 
 API Should Be Healthy
     [Documentation]    Verify the ticketing API is running and healthy
@@ -49,7 +54,7 @@ API Should Be Healthy
 Clear All Tickets
     [Documentation]    Clear all tickets (test cleanup)
     ${response}=    DELETE On Session    ${API_SESSION}    /tickets
-    [Return]    ${response}
+    RETURN    ${response}
 
 Ticket Should Be Valid
     [Documentation]    Verify ticket has valid status
