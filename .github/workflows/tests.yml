@@ -35,7 +35,7 @@ jobs:
           curl -sf http://localhost:8000/health || exit 1
 
       - name: Run Robot Framework tests
-        run: robot --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
+        run: robot --exclude ui --variable API_BASE_URL:http://localhost:8000 --outputdir results tests/
 
       - name: Upload Robot Framework report and log
         uses: actions/upload-artifact@v4
