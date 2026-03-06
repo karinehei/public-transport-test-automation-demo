@@ -29,7 +29,8 @@ Buy Ticket
 Create Ticket
     [Documentation]    Alias for Buy Ticket (backward compatibility)
     [Arguments]    ${zone}=AB
-    RETURN    Buy Ticket    zone=${zone}
+    ${response}=    Buy Ticket    zone=${zone}
+    RETURN    ${response}
 
 Get Ticket
     [Documentation]    Retrieve a ticket by ID
