@@ -1,6 +1,6 @@
 *** Settings ***
 Resource    ../../resources/keywords.robot
-Suite Setup    API Should Be Healthy
+Suite Setup    Run Keywords    Create API Session    AND    API Should Be Healthy
 Suite Teardown    Delete All Sessions
 
 *** Test Cases ***
@@ -17,7 +17,7 @@ Complete Ticket User Journey
     Log    Available zones: ${zones}
 
     # Step 2: Buy ticket
-    ${purchase_response}=    Create Ticket    zone=AB
+    ${purchase_response}=    Buy Ticket    zone=AB
     Should Be Equal As Strings    ${purchase_response.status_code}    201
     ${ticket_id}=    Set Variable    ${purchase_response.json()}[id]
     Dictionary Should Contain Key    ${purchase_response.json()}    zone

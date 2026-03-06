@@ -1,6 +1,8 @@
 *** Settings ***
 Library    RequestsLibrary
 Library    Collections
+Resource    ../../resources/keywords.robot
+Suite Setup    Create API Session
 Suite Teardown    Delete All Sessions
 
 *** Variables ***
@@ -9,8 +11,7 @@ ${API_BASE_URL}    http://api:8000
 *** Test Cases ***
 Get Zones
     [Documentation]    Retrieve available travel zones and validate response
-    Create Session    ticketing    ${API_BASE_URL}
-    ${response}=    GET On Session    ticketing    /zones
+    ${response}=    Get Zones
     Should Be Equal As Strings    ${response.status_code}    200
     Dictionary Should Contain Key    ${response.json()}    zones
     ${zones}=    Set Variable    ${response.json()}[zones]
@@ -25,9 +26,7 @@ Get Zones
 
 Purchase Ticket
     [Documentation]    Create a ticket (purchase) and validate response
-    Create Session    ticketing    ${API_BASE_URL}
-    ${payload}=    Create Dictionary    zone=AB
-    ${response}=    POST On Session    ticketing    /tickets    json=${payload}
+    ${response}=    Buy Ticket    zone=AB
     Should Be Equal As Strings    ${response.status_code}    201
     ${json}=    Set Variable    ${response.json()}
     Dictionary Should Contain Key    ${json}    id
@@ -40,12 +39,10 @@ Purchase Ticket
 
 Fetch Ticket
     [Documentation]    Purchase a ticket then fetch it by ID and validate
-    Create Session    ticketing    ${API_BASE_URL}
-    ${payload}=    Create Dictionary    zone=ABC
-    ${create_response}=    POST On Session    ticketing    /tickets    json=${payload}
+    ${create_response}=    Buy Ticket    zone=ABC
     Should Be Equal As Strings    ${create_response.status_code}    201
     ${ticket_id}=    Set Variable    ${create_response.json()}[id]
-    ${response}=    GET On Session    ticketing    /tickets/${ticket_id}
+    ${response}=    Get Ticket    ${ticket_id}
     Should Be Equal As Strings    ${response.status_code}    200
     ${json}=    Set Variable    ${response.json()}
     Should Be Equal As Strings    ${json}[id]    ${ticket_id}
@@ -56,18 +53,15 @@ Fetch Ticket
 
 Validate Ticket
     [Documentation]    Purchase ticket, validate it, and verify status
-    Create Session    ticketing    ${API_BASE_URL}
-    ${payload}=    Create Dictionary    zone=AB
-    ${create_response}=    POST On Session    ticketing    /tickets    json=${payload}
+    ${create_response}=    Buy Ticket    zone=AB
     Should Be Equal As Strings    ${create_response.status_code}    201
     ${ticket_id}=    Set Variable    ${create_response.json()}[id]
-    ${validate_payload}=    Create Dictionary    ticket_id=${ticket_id}
-    ${response}=    POST On Session    ticketing    /validate    json=${validate_payload}
+    ${response}=    Validate Ticket    ${ticket_id}
     Should Be Equal As Strings    ${response.status_code}    200
     ${json}=    Set Variable    ${response.json()}
     Should Be Equal As Strings    ${json}[ticket_id]    ${ticket_id}
     Should Be Equal As Strings    ${json}[valid]    True
     Should Be Equal As Strings    ${json}[status]    validated
     Dictionary Should Contain Key    ${json}    validated
-    ${get_response}=    GET On Session    ticketing    /tickets/${ticket_id}
+    ${get_response}=    Get Ticket    ${ticket_id}
     Should Be Equal As Strings    ${get_response.json()}[valid]    False
