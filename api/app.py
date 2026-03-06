@@ -1,4 +1,4 @@
-"""FastAPI ticketing API - simulates a public transport ticketing backend."""
+"""FastAPI ticketing API - simulates a public transport ticket system."""
 
 import uuid
 from datetime import datetime
@@ -6,10 +6,9 @@ from typing import Dict
 
 from fastapi import FastAPI, HTTPException
 
-from .models import (
+from models import (
     Ticket,
     TicketCreate,
-    TicketType,
     ValidationRequest,
     ValidationResponse,
     Zone,
@@ -43,16 +42,14 @@ def health_check():
 
 @app.post("/tickets", response_model=Ticket)
 def create_ticket(ticket_data: TicketCreate):
-    """Create a new ticket."""
+    """Create a ticket with zone and return ticket_id."""
     ticket_id = str(uuid.uuid4())
     ticket = {
         "id": ticket_id,
-        "ticket_type": ticket_data.ticket_type.value,
         "zone": ticket_data.zone.value,
-        "passenger_type": ticket_data.passenger_type,
         "created_at": datetime.utcnow(),
-        "validated_at": None,
         "valid": True,
+        "validated": None,
     }
     tickets[ticket_id] = ticket
     return ticket
@@ -60,7 +57,7 @@ def create_ticket(ticket_data: TicketCreate):
 
 @app.get("/tickets/{ticket_id}", response_model=Ticket)
 def get_ticket(ticket_id: str):
-    """Retrieve a ticket by ID."""
+    """Return ticket information."""
     if ticket_id not in tickets:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return tickets[ticket_id]
@@ -68,7 +65,7 @@ def get_ticket(ticket_id: str):
 
 @app.post("/validate", response_model=ValidationResponse)
 def validate_ticket(request: ValidationRequest):
-    """Validate a ticket (simulates validator scan)."""
+    """Validate a ticket and return status."""
     if request.ticket_id not in tickets:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
@@ -79,25 +76,25 @@ def validate_ticket(request: ValidationRequest):
         return ValidationResponse(
             ticket_id=request.ticket_id,
             valid=False,
-            message="Ticket has already been used",
-            validated_at=ticket.get("validated_at"),
+            status="already_used",
+            validated=ticket.get("validated"),
         )
 
     # Mark as validated
-    ticket["validated_at"] = now
+    ticket["validated"] = now
     ticket["valid"] = False
 
     return ValidationResponse(
         ticket_id=request.ticket_id,
         valid=True,
-        message="Ticket validated successfully",
-        validated_at=now,
+        status="validated",
+        validated=now,
     )
 
 
 @app.get("/zones")
 def get_zones():
-    """Get available transport zones."""
+    """Return available travel zones."""
     return {"zones": [z.model_dump() for z in ZONES]}
 
 

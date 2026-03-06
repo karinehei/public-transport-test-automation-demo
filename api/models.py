@@ -4,16 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
-
-
-class TicketType(str, Enum):
-    """Ticket type enumeration."""
-
-    SINGLE = "single"
-    DAY = "day"
-    WEEK = "week"
-    MONTH = "month"
+from pydantic import BaseModel
 
 
 class Zone(str, Enum):
@@ -29,21 +20,17 @@ class Zone(str, Enum):
 class TicketCreate(BaseModel):
     """Request model for creating a ticket."""
 
-    ticket_type: TicketType = TicketType.SINGLE
     zone: Zone = Zone.AB
-    passenger_type: str = "adult"
 
 
 class Ticket(BaseModel):
     """Ticket response model."""
 
     id: str
-    ticket_type: TicketType
-    zone: Zone
-    passenger_type: str
+    zone: str
     created_at: datetime
-    validated_at: Optional[datetime] = None
     valid: bool = True
+    validated: Optional[datetime] = None
 
 
 class ValidationRequest(BaseModel):
@@ -57,8 +44,8 @@ class ValidationResponse(BaseModel):
 
     ticket_id: str
     valid: bool
-    message: str
-    validated_at: Optional[datetime] = None
+    status: str
+    validated: Optional[datetime] = None
 
 
 class ZoneInfo(BaseModel):
