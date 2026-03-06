@@ -1,0 +1,4 @@
+# Root requirements for local development and CI
+robotframework==7.0.2
+requests==2.32.3
+robotframework-requests==0.9.5
