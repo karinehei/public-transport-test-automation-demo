@@ -6,26 +6,31 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 
 - **Python 3.12**
 - **FastAPI** – ticketing API backend
-- **Robot Framework** – test automation (RequestsLibrary)
+- **React + Vite** – web UI for buying and validating tickets
+- **Robot Framework** – test automation (RequestsLibrary, SeleniumLibrary)
 - **Docker & Docker Compose** – containerized execution
 - **GitHub Actions** – CI pipeline
 
 ## Project Structure
 
 ```
-├── api/
-│   ├── app.py           # FastAPI application
-│   ├── models.py        # Pydantic models
+├── api/                 # FastAPI backend
+│   ├── app.py
+│   ├── models.py
 │   └── requirements.txt
+├── frontend/            # React + Vite web UI
+│   ├── src/
+│   └── package.json
 ├── tests/
 │   ├── api/             # API tests
 │   │   └── ticket_api.robot
-│   ├── ui/              # UI flow tests (API-backed)
+│   ├── ui/              # UI automation tests (Selenium)
 │   │   └── buy_ticket.robot
-│   └── e2e/             # End-to-end tests
+│   └── e2e/             # End-to-end API tests
 │       └── ticket_flow.robot
 ├── resources/
-│   └── keywords.robot  # Reusable keywords
+│   ├── keywords.robot   # API keywords
+│   └── ui_keywords.robot
 ├── .github/
 │   └── workflows/
 │       └── tests.yml   # GitHub Actions workflow
@@ -63,14 +68,23 @@ Demo project simulating E2E test automation for a public transport ticketing sys
    pip install -r requirements.txt
    ```
 
-2. **Start the API:**
+2. **Start the API** (from project root):
    ```bash
    cd api && uvicorn app:app --host 0.0.0.0 --port 8000
    ```
 
-3. **Run tests** (in another terminal, with venv activated):
+3. **Run tests** (in another terminal, from project root with venv activated):
    ```bash
-   robot tests/
+   python -m robot --exclude ui tests/
+   ```
+
+4. **Start the web UI** (optional, from project root):
+   ```bash
+   cd frontend && npm install && npm run dev
+   ```
+   Open http://localhost:5173. Run UI tests (from project root, with venv activated):
+   ```bash
+   python -m robot --include ui --variable APP_URL:http://localhost:5173 tests/
    ```
 
 ### Docker Compose
@@ -80,14 +94,21 @@ Demo project simulating E2E test automation for a public transport ticketing sys
    docker compose up -d api
    ```
 
-2. **Run API + tests** (tests wait for API health, then run automatically):
+2. **Run API + frontend + tests:**
    ```bash
    docker compose up
    ```
+   - API: http://localhost:8000
+   - Web UI: http://localhost:3000
 
-3. **Run tests only** (API must be running):
+3. **Run API tests only** (excludes UI tests):
    ```bash
    docker compose run --rm tests
+   ```
+
+4. **Run UI tests** (API + frontend must be running):
+   ```bash
+   docker compose --profile ui-tests run --rm tests-ui
    ```
 
 Test results are written to `results/` (report.html, log.html).
