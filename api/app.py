@@ -40,7 +40,7 @@ def health_check():
     return {"status": "healthy", "service": "ticketing-api"}
 
 
-@app.post("/tickets", response_model=Ticket)
+@app.post("/tickets", response_model=Ticket, status_code=201)
 def create_ticket(ticket_data: TicketCreate):
     """Create a ticket with zone and return ticket_id."""
     ticket_id = str(uuid.uuid4())
