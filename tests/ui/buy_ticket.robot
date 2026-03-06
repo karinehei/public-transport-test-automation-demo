@@ -1,6 +1,6 @@
 *** Settings ***
 Resource    ../../resources/keywords.robot
-Suite Setup    Create Session    ticketing    ${API_BASE_URL}
+Suite Setup    Run Keywords    Create API Session    AND    API Should Be Healthy
 Suite Teardown    Delete All Sessions
 
 *** Test Cases ***
