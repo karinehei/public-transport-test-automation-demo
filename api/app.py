@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
     Ticket,
@@ -19,6 +20,14 @@ app = FastAPI(
     title="Public Transport Ticketing API",
     description="Demo API simulating HSL-style ticketing system",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # In-memory ticket storage
