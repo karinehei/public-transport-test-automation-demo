@@ -143,4 +143,5 @@ curl -X POST http://localhost:8000/validate \
 
 ## License
 
-MIT License – see [LICENSE](LICENSE) for details. Copyright (c) 2025 Karine Heinonen.
+MIT License – see [LICENSE](LICENSE) for details. Copyright (c) 2026
+ Karine Heinonen.
