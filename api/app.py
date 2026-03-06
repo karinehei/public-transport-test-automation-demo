@@ -40,6 +40,12 @@ def health_check():
     return {"status": "healthy", "service": "ticketing-api"}
 
 
+@app.get("/tickets")
+def list_tickets():
+    """List all tickets (for browser/API exploration)."""
+    return {"tickets": list(tickets.values())}
+
+
 @app.post("/tickets", response_model=Ticket, status_code=201)
 def create_ticket(ticket_data: TicketCreate):
     """Create a ticket with zone and return ticket_id."""
