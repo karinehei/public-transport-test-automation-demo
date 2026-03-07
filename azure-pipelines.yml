@@ -1,0 +1,257 @@
+# -----------------------------------------------------------------------------
+# Azure DevOps Pipeline - Public Transport Ticketing Test Automation
+# Robot Framework: API, UI, E2E tests with reporting and artifacts
+# -----------------------------------------------------------------------------
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  - group: Ticketing-Test-Config
+  - name: vmImage
+    value: 'ubuntu-latest'
+  - name: pythonVersion
+    value: '3.12'
+
+stages:
+  # ---------------------------------------------------------------------------
+  # Stage 1: Build / Setup
+  # ---------------------------------------------------------------------------
+  - stage: Build
+    displayName: 'Build & Setup'
+    jobs:
+      - job: Setup
+        displayName: 'Install Dependencies & Start Services'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: UsePythonVersion@0
+            displayName: 'Use Python $(pythonVersion)'
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+
+          - script: |
+              pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: 'Install Robot Framework & Dependencies'
+
+          - script: docker compose up -d api
+            displayName: 'Start API Container'
+
+          - script: |
+              echo "Waiting for API to be healthy..."
+              for i in $(seq 1 30); do
+                if curl -sf http://localhost:8000/health > /dev/null; then
+                  echo "API is ready"
+                  exit 0
+                fi
+                echo "Waiting... ($i/30)"
+                sleep 2
+              done
+              exit 1
+            displayName: 'Wait for API Health'
+
+  # ---------------------------------------------------------------------------
+  # Stage 2: API Tests
+  # ---------------------------------------------------------------------------
+  - stage: APITests
+    displayName: 'API Tests'
+    dependsOn: Build
+    jobs:
+      - job: RunAPITests
+        displayName: 'Robot Framework API Tests'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+
+          - script: pip install -r requirements.txt
+            displayName: 'Install Dependencies'
+
+          - script: docker compose up -d api
+            displayName: 'Start API'
+
+          - script: |
+              for i in $(seq 1 30); do
+                if curl -sf http://localhost:8000/health > /dev/null; then break; fi
+                sleep 2
+              done
+              curl -sf http://localhost:8000/health || exit 1
+            displayName: 'Wait for API'
+
+          - script: |
+              robot --exclude ui \
+                --variable API_BASE_URL:http://localhost:8000 \
+                --outputdir results/api \
+                --loglevel INFO \
+                tests/api/
+            displayName: 'Run API Tests'
+
+          - script: |
+              rebot --xunit results/api/junit.xml results/api/output.xml || true
+            displayName: 'Convert to JUnit for Azure DevOps'
+            condition: always()
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/junit.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/results/api'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            displayName: 'Publish API Test Results'
+
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/results/api'
+              artifactName: 'robot-api-results'
+              publishLocation: 'pipeline'
+            displayName: 'Publish API log.html, report.html, output.xml'
+
+  # ---------------------------------------------------------------------------
+  # Stage 3: UI Tests
+  # ---------------------------------------------------------------------------
+  - stage: UITests
+    displayName: 'UI Tests'
+    dependsOn: Build
+    jobs:
+      - job: RunUITests
+        displayName: 'Robot Framework UI Tests (Selenium)'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+
+          - script: pip install -r requirements.txt
+            displayName: 'Install Dependencies'
+
+          - script: docker compose up -d api frontend
+            displayName: 'Start API & Frontend'
+
+          - script: |
+              for i in $(seq 1 45); do
+                if curl -sf http://localhost:8000/health > /dev/null && curl -sf http://localhost:3000 > /dev/null; then
+                  echo "Services ready"
+                  break
+                fi
+                sleep 2
+              done
+              curl -sf http://localhost:8000/health || exit 1
+            displayName: 'Wait for Services'
+
+          - script: |
+              robot --include ui \
+                --variable API_BASE_URL:http://localhost:8000 \
+                --variable APP_URL:http://localhost:3000 \
+                --outputdir results/ui \
+                --loglevel INFO \
+                tests/
+            displayName: 'Run UI Tests'
+
+          - script: |
+              rebot --xunit results/ui/junit.xml results/ui/output.xml || true
+            displayName: 'Convert to JUnit for Azure DevOps'
+            condition: always()
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/junit.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/results/ui'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            displayName: 'Publish UI Test Results'
+
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/results/ui'
+              artifactName: 'robot-ui-results'
+              publishLocation: 'pipeline'
+            displayName: 'Publish UI log.html, report.html, output.xml'
+
+  # ---------------------------------------------------------------------------
+  # Stage 4: E2E Tests
+  # ---------------------------------------------------------------------------
+  - stage: E2ETests
+    displayName: 'E2E Tests'
+    dependsOn: Build
+    jobs:
+      - job: RunE2ETests
+        displayName: 'Robot Framework E2E Tests'
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+
+          - script: pip install -r requirements.txt
+            displayName: 'Install Dependencies'
+
+          - script: docker compose up -d api
+            displayName: 'Start API'
+
+          - script: |
+              for i in $(seq 1 30); do
+                if curl -sf http://localhost:8000/health > /dev/null; then break; fi
+                sleep 2
+              done
+              curl -sf http://localhost:8000/health || exit 1
+            displayName: 'Wait for API'
+
+          - script: |
+              robot --exclude ui \
+                --variable API_BASE_URL:http://localhost:8000 \
+                --outputdir results/e2e \
+                --loglevel INFO \
+                tests/e2e/
+            displayName: 'Run E2E Tests'
+
+          - script: |
+              rebot --xunit results/e2e/junit.xml results/e2e/output.xml || true
+            displayName: 'Convert to JUnit for Azure DevOps'
+            condition: always()
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/junit.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/results/e2e'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            displayName: 'Publish E2E Test Results'
+
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/results/e2e'
+              artifactName: 'robot-e2e-results'
+              publishLocation: 'pipeline'
+            displayName: 'Publish E2E log.html, report.html, output.xml'
