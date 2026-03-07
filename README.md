@@ -34,6 +34,7 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 ├── resources/
 │   ├── keywords.robot   # API keywords
 │   └── ui_keywords.robot
+├── assets/              # Screenshots and report images
 ├── infra/
 │   └── terraform/       # Azure DevOps IaC
 │       ├── main.tf
