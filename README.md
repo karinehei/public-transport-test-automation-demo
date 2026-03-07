@@ -10,6 +10,7 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 - **Robot Framework** – test automation (RequestsLibrary, SeleniumLibrary)
 - **Docker & Docker Compose** – containerized execution
 - **GitHub Actions** – CI pipeline
+- **Azure DevOps** – Terraform IaC, YAML pipeline, Test Plans–style docs
 
 ## Project Structure
 
@@ -31,10 +32,22 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 ├── resources/
 │   ├── keywords.robot   # API keywords
 │   └── ui_keywords.robot
+├── infra/
+│   └── terraform/       # Azure DevOps IaC
+│       ├── main.tf
+│       ├── variables.tf
+│       ├── outputs.tf
+│       ├── providers.tf
+│       ├── terraform.tfvars.example
+│       └── README.md
+├── docs/
+│   ├── azure-devops/    # Terraform, pipeline, environments
+│   └── test-management/ # Test plan, suites, traceability, defects
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml      # CI workflow (push + PR)
 │       └── tests.yml   # Tests workflow (push)
+├── azure-pipelines.yml # Azure DevOps pipeline (API, UI, E2E)
 ├── docker-compose.yml
 ├── Dockerfile
 ├── LICENSE
@@ -126,6 +139,65 @@ Workflows run on push and pull requests to `main`:
 Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
 
 Download `report.html` and `log.html` from the Actions run page.
+
+---
+
+## Azure DevOps with Terraform
+
+This project demonstrates **Azure DevOps–oriented CI/CD and test management** using Terraform, Robot Framework, Python, and automated reporting—suitable for a Senior Test Automation Engineer portfolio.
+
+### Terraform-Based Azure DevOps Setup
+
+Infrastructure as Code in `infra/terraform/` provisions:
+
+- **Azure DevOps project** (Agile, all features enabled)
+- **Environments** (dev, test, staging)
+- **Variable groups** (API_BASE_URL, APP_URL, etc.)
+- **Build pipeline** referencing `azure-pipelines.yml`
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+# Edit with org URL and PAT
+terraform init && terraform apply
+```
+
+See [docs/azure-devops/terraform-setup.md](docs/azure-devops/terraform-setup.md).
+
+### CI/CD Pipeline Structure
+
+`azure-pipelines.yml` defines a multi-stage pipeline:
+
+| Stage | Purpose |
+|-------|---------|
+| Build | Install deps, start API container |
+| API Tests | Robot Framework API tests |
+| UI Tests | Selenium-based UI tests |
+| E2E Tests | Full user journey via API |
+| Publish | Test results + artifacts (log.html, report.html, output.xml) |
+
+Stages run in parallel where possible. Results are published to Azure DevOps Test Results and as pipeline artifacts.
+
+See [docs/azure-devops/pipeline-architecture.md](docs/azure-devops/pipeline-architecture.md).
+
+### Robot Framework Reporting
+
+- **JUnit conversion**: `rebot --xunit` converts output.xml for Azure DevOps Test Results
+- **Artifacts**: log.html, report.html, output.xml per test type (API, UI, E2E)
+- **Variable group**: `Ticketing-Test-Config` for URLs and config
+
+### Test Management (Azure Test Plans Style)
+
+Documentation in `docs/test-management/` covers:
+
+- **Test plan**: Scope, objectives, test levels, entry/exit criteria
+- **Test suites**: Smoke, API, UI, E2E, Regression
+- **Test cases**: Structured cases with IDs, steps, automation status
+- **Traceability matrix**: Requirements ↔ test suites ↔ test cases ↔ Robot Framework files
+- **Defect management**: Lifecycle, severity, priority, triage for automated failures
+- **Test data management**: Creation, isolation, repeatability
+
+See [docs/test-management/](docs/test-management/).
 
 ## Example: Create and Validate Ticket
 
