@@ -2,6 +2,8 @@
 
 Demo project simulating E2E test automation for a public transport ticketing system (HSL-style).
 
+![Public Transport Tickets UI](assets/ticketing-ui.png)
+
 ## Tech Stack
 
 - **Python 3.12**
@@ -185,6 +187,14 @@ See [docs/azure-devops/pipeline-architecture.md](docs/azure-devops/pipeline-arch
 - **JUnit conversion**: `rebot --xunit` converts output.xml for Azure DevOps Test Results
 - **Artifacts**: log.html, report.html, output.xml per test type (API, UI, E2E)
 - **Variable group**: `Ticketing-Test-Config` for URLs and config
+
+![Robot Framework test report](assets/robot-report.png)
+
+*Example report showing pass/fail status, statistics by tag (e.g. smoke, e2e, critical), and breakdown by suite (API, E2E). Results are published as pipeline artifacts and to Azure DevOps Test Results.*
+
+![Robot Framework test details](assets/robot-report-details.png)
+
+*Detailed view of individual test cases: name, documentation, tags, status, and execution time. Supports traceability to test levels (API, E2E) and targeted runs (e.g. smoke, critical).*
 
 ### Test Management (Azure Test Plans Style)
 
