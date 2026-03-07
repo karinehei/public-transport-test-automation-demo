@@ -1,0 +1,16 @@
+# -----------------------------------------------------------------------------
+# Terraform Variables - Example
+# Copy to terraform.tfvars and fill in your values.
+# Never commit terraform.tfvars with secrets.
+# -----------------------------------------------------------------------------
+
+org_service_url       = "https://dev.azure.com/your-organization"
+personal_access_token = "your-pat-here"  # Or use env: TF_VAR_personal_access_token
+
+# Optional overrides
+project_name         = "TicketingTestAutomation"
+project_description  = "Public transport ticketing - test automation demo"
+environment_names    = ["dev", "test", "staging"]
+variable_group_name  = "Ticketing-Test-Config"
+naming_prefix        = "tta"
+pipeline_yaml_path   = "azure-pipelines.yml"
