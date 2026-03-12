@@ -143,7 +143,7 @@ This project is split into a **FastAPI backend** (`api/`) and a **Vite/React fro
 1. Go to [dashboard.render.com](https://dashboard.render.com) and sign in.
 2. Click **New** → **Blueprint**.
 3. Connect your Git provider and select this repository.
-4. Render reads `render.yaml` and creates both services (backend, frontend).
+4. Render reads `render.yaml` and creates all services (backend, frontend, test reports).
 
 ### 2. Deploy the backend
 
@@ -161,11 +161,12 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 - **Build:** `npm install && npm run build`
 - **Publish directory:** `frontend/dist`
 
-**Configure `VITE_API_URL`:**
+**Configure environment variables:**
 
 1. Open the frontend service → **Environment**.
 2. Add `VITE_API_URL` = your backend URL (e.g. `https://ticketing-api-xxxx.onrender.com`).
-3. Save and redeploy so the build picks up the variable.
+3. Add `VITE_REPORTS_URL` = your reports URL (e.g. `https://ticketing-reports-xxxx.onrender.com`) so the Test reports link works.
+4. Save and redeploy so the build picks up the variables.
 
 ### Live demo
 
@@ -173,6 +174,7 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 |----------|-----|
 | **Frontend** | [https://ticketing-ui-x83j.onrender.com](https://ticketing-ui-x83j.onrender.com) |
 | **Backend API** | [https://ticketing-api-4qn8.onrender.com](https://ticketing-api-4qn8.onrender.com) |
+| **Test Reports** | Set `VITE_REPORTS_URL` on frontend; URL shown in Render Dashboard |
 
 ### Local dev vs deployed demo
 
@@ -193,7 +195,7 @@ Workflows run on push and pull requests to `main`:
 
 Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
 
-**Test reports:** The ticketing UI has a "Test reports" link that opens the latest report in the browser. Reports are pushed to the `reports` branch by CI and viewed via [htmlpreview.github.io](https://htmlpreview.github.io). You can also download `report.html` and `log.html` from the Actions run artifacts.
+**Test reports:** The ticketing UI has a "Test reports" link. Reports are pushed to the `reports` branch by CI and served from the `ticketing-reports` Render Static Site. Set `VITE_REPORTS_URL` in the frontend service (e.g. `https://ticketing-reports-xxxx.onrender.com`) so the link opens the report directly. Without it, the link goes to the GitHub Actions page.
 
 ---
 

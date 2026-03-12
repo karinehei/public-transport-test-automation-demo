@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
+const REPORTS_URL = import.meta.env.VITE_REPORTS_URL
+const REPORTS_LINK = REPORTS_URL ? `${REPORTS_URL.replace(/\/$/, '')}/report.html` : 'https://github.com/karinehei/public-transport-test-automation-demo/actions'
 
 export default function App() {
   const [zones, setZones] = useState([])
@@ -149,7 +151,7 @@ export default function App() {
       )}
 
       <a
-        href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/karinehei/public-transport-test-automation-demo/reports/report.html"
+        href={REPORTS_LINK}
         target="_blank"
         rel="noopener noreferrer"
         className="reports-link"
