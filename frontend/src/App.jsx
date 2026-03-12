@@ -157,7 +157,7 @@ export default function App() {
         className="reports-link"
         data-testid="test-reports-link"
       >
-        Test reports
+        Test reports ↗
       </a>
     </div>
   )

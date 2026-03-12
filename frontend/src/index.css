@@ -142,13 +142,22 @@ button.secondary:hover {
 }
 
 .reports-link {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   margin-top: 1.5rem;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: #0078d4;
   text-decoration: none;
+  background: #f0f7ff;
+  border: 1px solid #cce4ff;
+  border-radius: 8px;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .reports-link:hover {
-  text-decoration: underline;
+  background: #e0efff;
+  border-color: #99c9ff;
 }
