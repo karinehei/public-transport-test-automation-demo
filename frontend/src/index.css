@@ -140,3 +140,15 @@ button.secondary:hover {
   font-size: 0.875rem;
   margin: 1rem 0;
 }
+
+.reports-link {
+  display: block;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: #0078d4;
+  text-decoration: none;
+}
+
+.reports-link:hover {
+  text-decoration: underline;
+}

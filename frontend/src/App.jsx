@@ -147,6 +147,16 @@ export default function App() {
           {error}
         </div>
       )}
+
+      <a
+        href="https://github.com/karinehel/public-transport-test-automation-demo/actions"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="reports-link"
+        data-testid="test-reports-link"
+      >
+        Test reports
+      </a>
     </div>
   )
 }
