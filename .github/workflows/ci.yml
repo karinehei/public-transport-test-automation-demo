@@ -93,6 +93,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p /tmp/ci-reports
           cp report.html log.html index.html /tmp/ci-reports/
+          rm -f report.html log.html index.html
           git fetch origin reports 2>/dev/null || true
           if git rev-parse origin/reports &>/dev/null; then
             git checkout -B reports origin/reports
