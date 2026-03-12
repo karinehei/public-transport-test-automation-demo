@@ -143,9 +143,7 @@ This project is split into a **FastAPI backend** (`api/`) and a **Vite/React fro
 1. Go to [dashboard.render.com](https://dashboard.render.com) and sign in.
 2. Click **New** → **Blueprint**.
 3. Connect your Git provider and select this repository.
-4. Render reads `render.yaml` and creates all services (backend, frontend, test reports).
-
-**Note:** The `ticketing-reports` service deploys from the `reports` branch, which is created automatically on the first push to `main` by the CI workflow. If you add the Blueprint before that, the reports service may show an error until the first CI run completes.
+4. Render reads `render.yaml` and creates both services (backend, frontend).
 
 ### 2. Deploy the backend
 
@@ -175,7 +173,6 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 |----------|-----|
 | **Frontend** | [https://ticketing-ui-x83j.onrender.com](https://ticketing-ui-x83j.onrender.com) |
 | **Backend API** | [https://ticketing-api-4qn8.onrender.com](https://ticketing-api-4qn8.onrender.com) |
-| **Test Reports** | Robot Framework reports (see CI section below) |
 
 ### Local dev vs deployed demo
 
@@ -191,12 +188,12 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 
 Workflows run on push and pull requests to `main`:
 
-- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded), deploys reports to `reports` branch
+- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded)
 - **tests.yml** – Push only; runs API + E2E tests
 
 Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
 
-**Test reports:** Download `report.html` and `log.html` from the Actions run page. A live copy is deployed to the `ticketing-reports` Render Static Site (from the `reports` branch, updated on each push to `main`). Add the service via Blueprint; the URL will be shown in the Render Dashboard.
+**Test reports:** Download `report.html` and `log.html` from the Actions run page. The ticketing UI has a "Test reports" link that opens the GitHub Actions page.
 
 ---
 
