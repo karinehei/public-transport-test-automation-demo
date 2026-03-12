@@ -2,6 +2,8 @@
 
 Demo project simulating E2E test automation for a public transport ticketing system (HSL-style).
 
+**[Live demo](https://ticketing-ui-x83j.onrender.com)** · [API](https://ticketing-api-4qn8.onrender.com/health)
+
 ![Public Transport Tickets UI](assets/ticketing-ui.png)
 
 ## Tech Stack
@@ -132,16 +134,69 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 
 Test results are written to `results/` (report.html, log.html).
 
+## Deployment (Render)
+
+This project is split into a **FastAPI backend** (`api/`) and a **Vite/React frontend** (`frontend/`). Deploy them as separate Render services.
+
+### 1. Connect the repository
+
+1. Go to [dashboard.render.com](https://dashboard.render.com) and sign in.
+2. Click **New** → **Blueprint**.
+3. Connect your Git provider and select this repository.
+4. Render reads `render.yaml` and creates all services (backend, frontend, test reports).
+
+**Note:** The `ticketing-reports` service deploys from the `reports` branch, which is created automatically on the first push to `main` by the CI workflow. If you add the Blueprint before that, the reports service may show an error until the first CI run completes.
+
+### 2. Deploy the backend
+
+- **Service type:** Web Service
+- **Root directory:** `api`
+- **Build:** `pip install -r requirements.txt`
+- **Start:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
+
+After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.com`).
+
+### 3. Deploy the frontend
+
+- **Service type:** Static Site
+- **Root directory:** `frontend`
+- **Build:** `npm install && npm run build`
+- **Publish directory:** `frontend/dist`
+
+**Configure `VITE_API_URL`:**
+
+1. Open the frontend service → **Environment**.
+2. Add `VITE_API_URL` = your backend URL (e.g. `https://ticketing-api-xxxx.onrender.com`).
+3. Save and redeploy so the build picks up the variable.
+
+### Live demo
+
+| Service  | URL |
+|----------|-----|
+| **Frontend** | [https://ticketing-ui-x83j.onrender.com](https://ticketing-ui-x83j.onrender.com) |
+| **Backend API** | [https://ticketing-api-4qn8.onrender.com](https://ticketing-api-4qn8.onrender.com) |
+| **Test Reports** | Robot Framework reports (see CI section below) |
+
+### Local dev vs deployed demo
+
+| Aspect        | Local development              | Deployed on Render              |
+|---------------|--------------------------------|---------------------------------|
+| API URL       | Vite proxy `/api` → localhost  | `VITE_API_URL` points to backend |
+| Storage       | In-memory (resets on restart)  | In-memory (resets on restart)   |
+| Free tier     | N/A                            | Services may spin down when idle |
+
+**Demo limitation:** The backend uses in-memory ticket storage. Data is lost when the service restarts or spins down (common on Render’s free tier).
+
 ## CI (GitHub Actions)
 
 Workflows run on push and pull requests to `main`:
 
-- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded)
+- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded), deploys reports to `reports` branch
 - **tests.yml** – Push only; runs API + E2E tests
 
 Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
 
-Download `report.html` and `log.html` from the Actions run page.
+**Test reports:** Download `report.html` and `log.html` from the Actions run page. A live copy is deployed to the `ticketing-reports` Render Static Site (from the `reports` branch, updated on each push to `main`). Add the service via Blueprint; the URL will be shown in the Render Dashboard.
 
 ---
 
@@ -213,13 +268,13 @@ See [docs/test-management/](docs/test-management/).
 ## Example: Create and Validate Ticket
 
 ```bash
-# Create ticket
-curl -X POST http://localhost:8000/tickets \
+# Create ticket (use deployed API or localhost:8000)
+curl -X POST https://ticketing-api-4qn8.onrender.com/tickets \
   -H "Content-Type: application/json" \
   -d '{"zone": "AB"}'
 
 # Validate (use ticket_id from response)
-curl -X POST http://localhost:8000/validate \
+curl -X POST https://ticketing-api-4qn8.onrender.com/validate \
   -H "Content-Type: application/json" \
   -d '{"ticket_id": "<ticket_id>"}'
 ```
