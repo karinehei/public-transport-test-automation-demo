@@ -72,7 +72,7 @@ jobs:
 
       - name: Create index page
         run: |
-          REPO="karinehel/public-transport-test-automation-demo"
+          REPO="karinehei/public-transport-test-automation-demo"
           cat > index.html << EOF
           <!DOCTYPE html>
           <html>
