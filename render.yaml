@@ -1,0 +1,22 @@
+# Render Blueprint - Ticketing Demo
+# Backend: FastAPI Web Service | Frontend: Vite Static Site
+
+services:
+  # FastAPI backend
+  - type: web
+    name: ticketing-api
+    runtime: python
+    rootDir: api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+
+  # Vite/React frontend
+  - type: web
+    name: ticketing-ui
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://public-transport-api.onrender.com
