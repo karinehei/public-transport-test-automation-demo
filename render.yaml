@@ -23,3 +23,11 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ticketing-api-4qn8.onrender.com
+
+  # Robot Framework test reports (deployed from reports branch by CI)
+  - type: web
+    name: ticketing-reports
+    runtime: static
+    branch: reports
+    buildCommand: "echo 'No build needed'"
+    staticPublishPath: .

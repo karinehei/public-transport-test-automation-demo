@@ -48,3 +48,46 @@ jobs:
         with:
           name: robot-results
           path: results/
+
+  deploy-reports:
+    needs: test
+    if: always() && needs.test.result != 'cancelled' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: robot-results
+
+      - name: Create index page
+        run: |
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head><title>Robot Framework Test Reports</title></head>
+          <body>
+            <h1>Robot Framework Test Reports</h1>
+            <ul>
+              <li><a href="report.html">Report</a></li>
+              <li><a href="log.html">Log</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Push to reports branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan reports
+          git reset --hard
+          git add report.html log.html index.html
+          git commit -m "Update test reports [skip ci]"
+          git push -f origin reports
