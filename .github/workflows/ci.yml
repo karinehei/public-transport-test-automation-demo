@@ -50,3 +50,52 @@ jobs:
         with:
           name: robot-results
           path: results/
+
+  deploy-reports:
+    needs: test
+    if: always() && needs.test.result != 'cancelled' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: robot-results
+
+      - name: Create index page
+        run: |
+          REPO="karinehel/public-transport-test-automation-demo"
+          cat > index.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head><title>Robot Framework Test Reports</title></head>
+          <body>
+            <h1>Robot Framework Test Reports</h1>
+            <ul>
+              <li><a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/${REPO}/reports/report.html">Report</a></li>
+              <li><a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/${REPO}/reports/log.html">Log</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Push to reports branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin reports 2>/dev/null || true
+          git checkout reports 2>/dev/null || git checkout -b reports
+          if ! git rev-parse origin/reports &>/dev/null; then
+            git rm -rf . 2>/dev/null || true
+          fi
+          git add report.html log.html index.html
+          git diff --staged --quiet || git commit -m "Update test reports [skip ci]"
+          git push origin reports

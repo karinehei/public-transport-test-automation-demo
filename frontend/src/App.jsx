@@ -149,7 +149,7 @@ export default function App() {
       )}
 
       <a
-        href="https://github.com/karinehel/public-transport-test-automation-demo/actions"
+        href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/karinehel/public-transport-test-automation-demo/reports/report.html"
         target="_blank"
         rel="noopener noreferrer"
         className="reports-link"

@@ -193,7 +193,7 @@ Workflows run on push and pull requests to `main`:
 
 Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
 
-**Test reports:** Download `report.html` and `log.html` from the Actions run page. The ticketing UI has a "Test reports" link that opens the GitHub Actions page.
+**Test reports:** The ticketing UI has a "Test reports" link that opens the latest report in the browser. Reports are pushed to the `reports` branch by CI and viewed via [htmlpreview.github.io](https://htmlpreview.github.io). You can also download `report.html` and `log.html` from the Actions run artifacts.
 
 ---
 
