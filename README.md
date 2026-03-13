@@ -4,7 +4,7 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 
 **[Live demo](https://ticketing-ui-x83j.onrender.com)** · [API](https://ticketing-api-4qn8.onrender.com/health)
 
-![Public Transport Tickets UI](assets/ticketing-ui.png)
+![Public Transport Tickets UI](assets/ticketing-ui-with-report.png)
 
 ## Tech Stack
 
