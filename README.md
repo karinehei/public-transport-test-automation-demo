@@ -55,6 +55,8 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 ├── azure-pipelines.yml # Azure DevOps pipeline (API, UI, E2E)
 ├── docker-compose.yml
 ├── Dockerfile
+├── render.yaml        # Render Blueprint (backend, frontend, test reports)
+├── .python-version    # Python 3.12 for Render
 ├── LICENSE
 ├── requirements.txt
 └── README.md
@@ -145,6 +147,8 @@ This project is split into a **FastAPI backend** (`api/`) and a **Vite/React fro
 3. Connect your Git provider and select this repository.
 4. Render reads `render.yaml` and creates all services (backend, frontend, test reports).
 
+**Alternative:** Create the reports site manually: **New** → **Static Site** → Branch: `reports`, Publish directory: `.`, Build command: `echo "No build needed"`. The `reports` branch is created automatically on the first push to `main`.
+
 ### 2. Deploy the backend
 
 - **Service type:** Web Service
@@ -174,7 +178,7 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 |----------|-----|
 | **Frontend** | [https://ticketing-ui-x83j.onrender.com](https://ticketing-ui-x83j.onrender.com) |
 | **Backend API** | [https://ticketing-api-4qn8.onrender.com](https://ticketing-api-4qn8.onrender.com) |
-| **Test Reports** | Set `VITE_REPORTS_URL` on frontend; URL shown in Render Dashboard |
+| **Test Reports** | Deploy from `reports` branch; set `VITE_REPORTS_URL` on frontend |
 
 ### Local dev vs deployed demo
 
@@ -190,12 +194,12 @@ After deploy, note the backend URL (e.g. `https://ticketing-api-xxxx.onrender.co
 
 Workflows run on push and pull requests to `main`:
 
-- **ci.yml** – Push and PR; runs API + E2E tests (UI tests excluded)
+- **ci.yml** – Push and PR; runs API + E2E tests (UI excluded), pushes report.html and log.html to `reports` branch
 - **tests.yml** – Push only; runs API + E2E tests
 
-Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload report artifacts.
+Steps: checkout → Python 3.12 → install deps → start API → run Robot Framework tests → upload artifacts → deploy reports to `reports` branch.
 
-**Test reports:** The ticketing UI has a "Test reports" link. Reports are pushed to the `reports` branch by CI and served from the `ticketing-reports` Render Static Site. Set `VITE_REPORTS_URL` in the frontend service (e.g. `https://ticketing-reports-xxxx.onrender.com`) so the link opens the report directly. Without it, the link goes to the GitHub Actions page.
+**Test reports:** The ticketing UI has a "Test reports ↗" link. CI pushes report.html and log.html to the `reports` branch on each run. Deploy a Render Static Site from that branch (via Blueprint or manually) and set `VITE_REPORTS_URL` on the frontend so the link opens the report directly. Without it, the link falls back to the GitHub Actions page.
 
 ---
 
@@ -280,5 +284,4 @@ curl -X POST https://ticketing-api-4qn8.onrender.com/validate \
 
 ## License
 
-MIT License – see [LICENSE](LICENSE) for details. Copyright (c) 2026
- Karine Heinonen.
+MIT License – see [LICENSE](LICENSE) for details. Copyright (c) 2026 Karine Heinonen.
