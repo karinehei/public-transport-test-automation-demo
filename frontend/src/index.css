@@ -145,7 +145,6 @@ button.secondary:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-top: 1.5rem;
   padding: 0.5rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -160,4 +159,15 @@ button.secondary:hover {
 .reports-link:hover {
   background: #e0efff;
   border-color: #99c9ff;
+}
+
+.reports-section {
+  margin-top: 1.5rem;
+}
+
+.reports-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #888;
 }

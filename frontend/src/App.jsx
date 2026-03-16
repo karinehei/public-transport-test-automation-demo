@@ -150,15 +150,19 @@ export default function App() {
         </div>
       )}
 
-      <a
-        href={REPORTS_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="reports-link"
-        data-testid="test-reports-link"
-      >
-        Test reports ↗
-      </a>
+      <div className="reports-section">
+        <a
+          href={REPORTS_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="reports-link"
+          data-testid="test-reports-link"
+          title="Robot Framework test results"
+        >
+          Test reports ↗
+        </a>
+        <span className="reports-hint">Robot Framework test results (report.html, log.html)</span>
+      </div>
     </div>
   )
 }

@@ -4,6 +4,8 @@ Demo project simulating E2E test automation for a public transport ticketing sys
 
 **[Live demo](https://ticketing-ui-x83j.onrender.com)** · [API](https://ticketing-api-4qn8.onrender.com/health)
 
+*"Select travel zone" may load slowly on first visit—the backend uses a free instance and spins down after inactivity.*
+
 ![Public Transport Tickets UI](assets/ticketing-ui-with-report.png)
 
 ## Tech Stack
